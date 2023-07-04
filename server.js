@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors'
 import { errorHandler } from './middlewares/errorHandler.js';
 import userRoute from './routes/userRoute.js'
+import mongoDBConnect from "./config/db.js"
 const app = express();
 dotenv.config()
 
@@ -22,5 +23,6 @@ app.use('api/user', userRoute)
 app.use(errorHandler)
 
 app.listen(PORT, () => {
+    mongoDBConnect()
     console.log(`Server listening on port ${PORT}`);
 })
