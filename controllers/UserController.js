@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
+import bcrypt from 'bcrypt'
 
 export const getAllUser = asyncHandler(async (req, res) => {
     const users = await User.find();
@@ -33,12 +34,20 @@ export const getsingleUser = asyncHandler ( async (req, res) => {
 
 export const createUser = asyncHandler (async (req, res) => {
     const {name, email, mobile, password, gender } = req.body;
-    if(!name, !email, !mobile, !password, !gender ){
+    if(!name, !email, !password ){
         return res.status(404).json({
             message: "all fields are required"
         })
     }
-    const user = await User.create({name, email, mobile, password, gender})
+    const userEmailCheck = await User.findOne({ email })
+    if(userEmailCheck){
+        return res.status(404).json({
+            message: "this email is already exists"
+        })
+    }
+
+    const hashPass = await bcrypt.hash(password, 10)
+    const user = await User.create({name, email, mobile, password : hashPass, gender})
     res.status(201).json(user)
     
 })

@@ -21,9 +21,14 @@ const useSchema = new mongoose.Schema({
         trim: true,
         required: true
     },
+    role: {
+        type: String,
+        default: "Author"
+    },
     gender: {
         type: String,
-        enum: ["Female", "Male"],
+        enum: ["Female", "Male", "undefined"],
+        default: "undefined"
     },
     photo: {
         type: String,
@@ -37,6 +42,8 @@ const useSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     }
+},{
+    timestamps: true
 })
 
 export default mongoose.model("User", useSchema)

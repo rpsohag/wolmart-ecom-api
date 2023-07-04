@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors'
 import { errorHandler } from './middlewares/errorHandler.js';
 import userRoute from './routes/userRoute.js'
+import authRoute from './routes/authRoute.js'
 import mongoDBConnect from "./config/db.js"
 const app = express();
 dotenv.config()
@@ -17,8 +18,10 @@ app.use(cookieParser())
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors())
+app.use(express.static("public"))
 
 app.use('/api/v1/user', userRoute)
+app.use('/api/v1/auth', authRoute)
 
 app.use(errorHandler)
 
