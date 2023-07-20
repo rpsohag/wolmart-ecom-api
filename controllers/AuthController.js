@@ -41,7 +41,7 @@ export const login = asyncHandler(async (req, res) => {
 
   res.cookie("accessToken", token, {
     httpOnly: true,
-    secure: false,
+    secure: process.env.APP_ENV == "development" ? true : false,
     sameSite: "strict",
     path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -77,4 +77,8 @@ export const register = asyncHandler(async (req, res) => {
   const hashPass = await bcrypt.hash(password, 10);
   const user = await User.create({ name, email, password: hashPass });
   res.status(201).json({ user, message: "Register Successfull" });
+});
+
+export const loggedInUser = asyncHandler(async (req, res) => {
+  res.status(200).json(req.me);
 });
