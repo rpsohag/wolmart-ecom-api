@@ -91,7 +91,6 @@ export const updateAuthProfile = asyncHandler(async (req, res) => {
       name: req.body.name,
       email: req.body.email,
       mobile: req.body.mobile,
-      date_of_birth: req.body.date_of_birth,
       address: req.body.address,
       bio: req.body.bio,
     },
@@ -103,4 +102,42 @@ export const updateAuthProfile = asyncHandler(async (req, res) => {
     message: "Profile Updated Successfully",
     user,
   });
+});
+export const updateAuthPassword = asyncHandler(async (req, res) => {
+  const { id } = req.me;
+  const { old_password, new_password } = req.body;
+
+  try {
+    // Fetch the user from the database using their email
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if the current password matches the one stored in the database
+    const passwordMatch = await bcrypt.compare(old_password, user.password);
+
+    if (!passwordMatch) {
+      res.status(401).json({ message: "Invalid current password." });
+    }
+
+    // Validate the new password (you can customize these criteria)
+    if (new_password.length < 8) {
+      res
+        .status(400)
+        .json({ message: "New password must be at least 8 characters long." });
+    }
+
+    // Hash the new password before storing it in the database
+    const hashedNewPassword = await bcrypt.hash(new_password, 10);
+
+    // Update the user's password in the database
+    user.password = hashedNewPassword;
+    await user.save();
+
+    res.json({ message: "Password updated successfully.", user });
+  } catch (error) {
+    res.status(500).json(error);
+  }
 });

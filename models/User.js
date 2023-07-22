@@ -31,10 +31,6 @@ const useSchema = new mongoose.Schema(
       enum: ["Female", "Male", "undefined"],
       default: "undefined",
     },
-    date_of_birth: {
-      type: Date,
-      default: null,
-    },
     address: {
       type: String,
       default: null,
