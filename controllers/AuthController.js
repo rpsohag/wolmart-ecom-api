@@ -82,3 +82,25 @@ export const register = asyncHandler(async (req, res) => {
 export const loggedInUser = asyncHandler(async (req, res) => {
   res.status(200).json(req.me);
 });
+
+export const updateAuthProfile = asyncHandler(async (req, res) => {
+  const { id } = req.me;
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      name: req.body.name,
+      email: req.body.email,
+      mobile: req.body.mobile,
+      date_of_birth: req.body.date_of_birth,
+      address: req.body.address,
+      bio: req.body.bio,
+    },
+    {
+      new: true,
+    }
+  );
+  res.status(200).json({
+    message: "Profile Updated Successfully",
+    user,
+  });
+});
