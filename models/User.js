@@ -22,6 +22,13 @@ const useSchema = new mongoose.Schema(
       trim: true,
       required: true,
     },
+    resetToken: {
+      type: String,
+      trim: true,
+    },
+    resetTokenExpiration: {
+      type: Date,
+    },
     role: {
       type: String,
       default: "Author",

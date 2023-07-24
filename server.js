@@ -5,6 +5,8 @@ import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import userRoute from "./routes/userRoute.js";
 import authRoute from "./routes/authRoute.js";
+import permissionRoute from "./routes/permissionRoute.js";
+import roleRoute from "./routes/roleRoute.js";
 import mongoDBConnect from "./config/db.js";
 const app = express();
 dotenv.config();
@@ -24,6 +26,8 @@ app.use(express.static("public"));
 
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/permission", permissionRoute);
+app.use("/api/v1/auth", roleRoute);
 
 app.use(errorHandler);
 

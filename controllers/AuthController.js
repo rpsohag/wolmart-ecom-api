@@ -2,6 +2,8 @@ import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { generateResetToken } from "../utils/generateResetToken.js";
+import { sendResetEmail } from "../utils/sendResetEmail.js";
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -139,5 +141,66 @@ export const updateAuthPassword = asyncHandler(async (req, res) => {
     res.json({ message: "Password updated successfully.", user });
   } catch (error) {
     res.status(500).json(error);
+  }
+});
+
+export const forgetPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const token = generateResetToken();
+  const expirationTime = Date.now() + 3600000;
+
+  // Save reset token and expiration time in the user's document
+  const userCheck = await User.findOne({ email });
+
+  if (!userCheck) {
+    return res.status(404).json({
+      message: "User Not found",
+    });
+  }
+
+  const user = await User.findOneAndUpdate(
+    { email },
+    { resetToken: token, resetTokenExpiration: expirationTime },
+    { new: true }
+  );
+
+  // Send reset email to the user's email address
+  await sendResetEmail(email, token);
+
+  return res.json({
+    message: "Password reset email sent successfully.",
+    user,
+  });
+});
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    // 6. Find the user by the token and check if it's valid
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiration: { $gt: Date.now() }, // Check if token is not expired
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Invalid Token ",
+      });
+    }
+
+    // Hash the new password before storing it in the database
+    const hashedNewPassword = await bcrypt.hash(password, 10);
+    // 7. Update the user's password and clear the reset token fields
+    user.password = hashedNewPassword;
+    user.resetToken = null;
+    user.resetTokenExpiration = null;
+    await user.save();
+
+    res.json({ message: "Password reset successfully." });
+  } catch (err) {
+    console.error("Error while processing reset password:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
