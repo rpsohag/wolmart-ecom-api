@@ -136,10 +136,11 @@ export const deletePermission = AsyncHandler(async (req, res) => {
     }
 
     // Delete the permission
-    await Permission.findByIdAndDelete(id);
+    const permission = await Permission.findByIdAndDelete(id);
 
     return res.status(200).json({
       message: "Permission deleted successfully.",
+      permission,
     });
   } catch (error) {
     return res.status(500).json({
