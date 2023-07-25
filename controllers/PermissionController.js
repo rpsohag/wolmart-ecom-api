@@ -122,6 +122,28 @@ export const updatePermission = AsyncHandler(async (req, res) => {
     });
   }
 });
+export const updatePermissionStatus = AsyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const permission = await Permission.findByIdAndUpdate(
+      id,
+      {
+        status: !status,
+      },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .json({ permission, message: "Status updated successfull" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error updating the permission.",
+      error: error.message,
+    });
+  }
+});
 
 export const deletePermission = AsyncHandler(async (req, res) => {
   const { id } = req.params;
