@@ -44,7 +44,7 @@ export const getSingleRole = AsyncHandler(async (req, res) => {
 });
 
 export const createRole = AsyncHandler(async (req, res) => {
-  const { name } = req.body;
+  const { name, permissions } = req.body;
 
   // Validate input
   if (!name) {
@@ -66,9 +66,10 @@ export const createRole = AsyncHandler(async (req, res) => {
     const role = await Role.create({
       name,
       slug: createUniqueSlug(name),
+      permissions,
     });
 
-    return res.status(201).json(role);
+    return res.status(201).json({ message: "role created successfull", role });
   } catch (error) {
     return res.status(500).json({
       message: "Error creating the Role.",
