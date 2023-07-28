@@ -122,6 +122,29 @@ export const updateRole = AsyncHandler(async (req, res) => {
   }
 });
 
+export const updateRoleStatus = AsyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const role = await Role.findByIdAndUpdate(
+      id,
+      {
+        status: !status,
+      },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .json({ message: "Status updated successfull", role });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error updating the role.",
+      error: error.message,
+    });
+  }
+});
+
 export const deleteRole = AsyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -135,10 +158,11 @@ export const deleteRole = AsyncHandler(async (req, res) => {
     }
 
     // Delete the Role
-    await Role.findByIdAndDelete(id);
+    const role = await Role.findByIdAndDelete(id);
 
     return res.status(200).json({
       message: "Role deleted successfully.",
+      role,
     });
   } catch (error) {
     return res.status(500).json({
