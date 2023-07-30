@@ -80,7 +80,7 @@ export const createRole = AsyncHandler(async (req, res) => {
 
 export const updateRole = AsyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, permissions } = req.body;
 
   // Validate input
   if (!name) {
@@ -106,14 +106,17 @@ export const updateRole = AsyncHandler(async (req, res) => {
       });
     }
 
-    // Update the Role with the new name
-    existingRole.name = name;
-    existingRole.slug = createUniqueSlug(name);
+    const role = await Role.findByIdAndUpdate(
+      id,
+      {
+        name,
+        slug: createUniqueSlug(name),
+        permissions: permissions,
+      },
+      { new: true }
+    );
 
-    // Save the updated Role
-    const updatedRole = await existingRole.save();
-
-    return res.status(200).json(updatedRole);
+    return res.status(200).json({ message: "Role updated Successfully", role });
   } catch (error) {
     return res.status(500).json({
       message: "Error updating the Role.",
