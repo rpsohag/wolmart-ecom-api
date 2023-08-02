@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { generateResetToken } from "../utils/generateResetToken.js";
-import { sendResetEmail } from "../utils/sendResetEmail.js";
+import { sendResetEmail } from "../utils/sendEmail.js";
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -12,7 +12,7 @@ export const login = asyncHandler(async (req, res) => {
       message: "all fields are required",
     });
   }
-  const loginUser = await User.findOne({ email });
+  const loginUser = await User.findOne({ email }).populate("role");
   if (!loginUser) {
     return res.status(404).json({
       message: "User Not Found",

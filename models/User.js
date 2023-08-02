@@ -30,8 +30,9 @@ const useSchema = new mongoose.Schema(
       type: Date,
     },
     role: {
-      type: String,
-      default: "Author",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      required: true,
     },
     gender: {
       type: String,

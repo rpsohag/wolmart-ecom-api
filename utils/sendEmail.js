@@ -34,3 +34,34 @@ export const sendResetEmail = async (email, token) => {
     throw new Error("Error sending reset email");
   }
 };
+
+// Function to send the reset email
+export const sendUserCreateEmail = async ({ to, subject, message }) => {
+  try {
+    // Create a Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      // Replace these options with your email service configuration
+      host: "sandbox.smtp.mailtrap.io",
+      port: 2525,
+      auth: {
+        user: "b8203aeaee1f83",
+        pass: "ec892d8632d44f",
+      },
+    });
+
+    // Email content
+    const mailOptions = {
+      from: "UserCreate <no-reply@yourdomain.com>",
+      to: to,
+      subject: subject,
+      html: message,
+    };
+
+    // Send the email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("user create email sent: ", info.messageId);
+  } catch (error) {
+    console.error("Error while sending user create email:", error);
+    throw new Error("Error sending user create email");
+  }
+};
