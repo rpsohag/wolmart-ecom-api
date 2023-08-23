@@ -5,6 +5,7 @@ import cors from "cors";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import userRoute from "./routes/userRoute.js";
 import authRoute from "./routes/authRoute.js";
+import brandRoute from "./routes/brandRoute.js";
 import permissionRoute from "./routes/permissionRoute.js";
 import roleRoute from "./routes/roleRoute.js";
 import mongoDBConnect from "./config/db.js";
@@ -28,6 +29,7 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/permission", permissionRoute);
 app.use("/api/v1/auth", roleRoute);
+app.use("/api/v1/brand", brandRoute);
 
 app.use(errorHandler);
 
