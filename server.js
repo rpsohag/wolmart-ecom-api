@@ -8,6 +8,7 @@ import authRoute from "./routes/authRoute.js";
 import brandRoute from "./routes/brandRoute.js";
 import permissionRoute from "./routes/permissionRoute.js";
 import roleRoute from "./routes/roleRoute.js";
+import tagRoute from "./routes/tagRoute.js";
 import mongoDBConnect from "./config/db.js";
 const app = express();
 dotenv.config();
@@ -30,6 +31,7 @@ app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/permission", permissionRoute);
 app.use("/api/v1/auth", roleRoute);
 app.use("/api/v1/brand", brandRoute);
+app.use("/api/v1/tag", tagRoute);
 
 app.use(errorHandler);
 
