@@ -9,6 +9,7 @@ import brandRoute from "./routes/brandRoute.js";
 import permissionRoute from "./routes/permissionRoute.js";
 import roleRoute from "./routes/roleRoute.js";
 import tagRoute from "./routes/tagRoute.js";
+import categoryRoute from "./routes/categoryRoute.js";
 import mongoDBConnect from "./config/db.js";
 const app = express();
 dotenv.config();
@@ -17,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -32,6 +33,7 @@ app.use("/api/v1/permission", permissionRoute);
 app.use("/api/v1/auth", roleRoute);
 app.use("/api/v1/brand", brandRoute);
 app.use("/api/v1/tag", tagRoute);
+app.use("/api/v1/category", categoryRoute);
 
 app.use(errorHandler);
 

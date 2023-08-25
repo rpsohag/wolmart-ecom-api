@@ -2,6 +2,7 @@ import AsyncHandler from "express-async-handler";
 import Brand from "../models/Brand.js";
 import { createUniqueSlug } from "../utils/generateSlug.js";
 import { isValidObjectId } from "../utils/isValidObjectId.js";
+import { CloudDelete, CloudUpload } from "../utils/cloudinary.js";
 
 export const getAllBrand = AsyncHandler(async (req, res) => {
   try {
@@ -51,11 +52,10 @@ export const getSingleBrand = AsyncHandler(async (req, res) => {
 
 export const createBrand = AsyncHandler(async (req, res) => {
   const { name } = req.body;
-
   // Validate input
   if (!name) {
     return res.status(400).json({
-      message: "Brand name is required!",
+      message: "Brand name is required 1!",
     });
   }
 
@@ -68,10 +68,14 @@ export const createBrand = AsyncHandler(async (req, res) => {
       });
     }
 
+    const logo = await CloudUpload(req);
+
     // Create a new Brand with a unique slug
     const brand = await Brand.create({
       name,
       slug: createUniqueSlug(name),
+      logo: logo.secure_url ? logo.secure_url : null,
+      cloud_public_id: logo.public_id ? logo.public_id : null,
     });
 
     return res
@@ -87,7 +91,7 @@ export const createBrand = AsyncHandler(async (req, res) => {
 
 export const updateBrand = AsyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, permissions } = req.body;
+  const { name } = req.body;
 
   // Validate input
   if (!name) {
@@ -104,7 +108,6 @@ export const updateBrand = AsyncHandler(async (req, res) => {
         message: "Brand not found!",
       });
     }
-
     // Check if another Brand with the same name already exists
     const BrandCheck = await Brand.findOne({ name });
     if (BrandCheck && BrandCheck._id.toString() !== id) {
@@ -112,13 +115,20 @@ export const updateBrand = AsyncHandler(async (req, res) => {
         message: "Brand with the same name already exists!",
       });
     }
-
+    let logo = {};
+    if (req.file) {
+      await CloudDelete(existingBrand.cloud_public_id);
+      logo = await CloudUpload(req);
+    }
     const brand = await Brand.findByIdAndUpdate(
       id,
       {
         name,
         slug: createUniqueSlug(name),
-        permissions: permissions,
+        logo: req.file ? logo.secure_url : existingBrand.logo,
+        cloud_public_id: req.file
+          ? logo.public_id
+          : existingBrand.cloud_public_id,
       },
       { new: true }
     );
@@ -127,6 +137,7 @@ export const updateBrand = AsyncHandler(async (req, res) => {
       .status(200)
       .json({ message: "Brand updated Successfully", brand });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       message: "Error updating the Brand.",
       error: error.message,
@@ -171,6 +182,7 @@ export const deleteBrand = AsyncHandler(async (req, res) => {
 
     // Delete the Brand
     const brand = await Brand.findByIdAndDelete(id);
+    await CloudDelete(existingBrand.cloud_public_id);
 
     return res.status(200).json({
       message: "Brand deleted successfully.",
