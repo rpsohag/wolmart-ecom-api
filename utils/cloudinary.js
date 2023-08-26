@@ -1,5 +1,4 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
 
 cloudinary.config({
   cloud_name: "dgftd2zkl",
@@ -8,13 +7,8 @@ cloudinary.config({
 });
 
 export const CloudUpload = async (req) => {
-  fs.writeFileSync("./" + req.file.originalname, req.file.buffer);
   // upload brand logo
-  const data = await cloudinary.uploader.upload(
-    "./" + req.file.originalname,
-    req.file.buffer
-  );
-  fs.unlinkSync("./" + req.file.originalname);
+  const data = await cloudinary.uploader.upload(req.file.path);
   return data;
 };
 

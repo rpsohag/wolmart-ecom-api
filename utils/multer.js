@@ -20,7 +20,14 @@ import multer from "multer";
 
 // export default storage;
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      Date.now() + Math.round(Math.random() * 10000) + "_" + file.fieldname
+    );
+  },
+});
 
 // multer for brand logo
 export const brandLogo = multer({ storage }).single("logo");
