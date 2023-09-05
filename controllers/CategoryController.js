@@ -2,6 +2,8 @@ import AsyncHandler from "express-async-handler";
 import Category from "../models/Category.js";
 import { createUniqueSlug } from "../utils/generateSlug.js";
 import { isValidObjectId } from "../utils/isValidObjectId.js";
+import { CloudDelete, CloudUpload } from "../utils/cloudinary.js";
+import { findPublicID } from "../helpers/helpers.js";
 
 export const getAllCategory = AsyncHandler(async (req, res) => {
   try {
@@ -89,7 +91,7 @@ export const getSingleCategory = AsyncHandler(async (req, res) => {
 });
 
 export const createCategory = AsyncHandler(async (req, res) => {
-  const { name, parentCategory } = req.body;
+  const { name, parentCategory, icon } = req.body;
 
   // Validate input
   if (!name) {
@@ -106,12 +108,25 @@ export const createCategory = AsyncHandler(async (req, res) => {
         message: "Category with the same name already exists!",
       });
     }
+    let catIcon = null;
+    if (icon) {
+      catIcon = icon;
+    }
+    // category photo
+
+    let catPhoto = null;
+    if (req.file) {
+      const cat = await CloudUpload(req);
+      catPhoto = cat.secure_url;
+    }
 
     // Create a new Category with a unique slug
     const category = await Category.create({
       name,
       slug: createUniqueSlug(name),
       parentCategory: parentCategory ? parentCategory : null,
+      icon: catIcon,
+      photo: catPhoto,
     });
 
     if (parentCategory) {
@@ -133,7 +148,7 @@ export const createCategory = AsyncHandler(async (req, res) => {
 
 export const updateCategory = AsyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, permissions } = req.body;
+  const { name, parentCategory, icon } = req.body;
 
   // Validate input
   if (!name) {
@@ -159,19 +174,44 @@ export const updateCategory = AsyncHandler(async (req, res) => {
       });
     }
 
-    const category = await Category.findByIdAndUpdate(
-      id,
-      {
-        name,
-        slug: createUniqueSlug(name),
-        permissions: permissions,
-      },
-      { new: true }
-    );
+    // const category = await Category.findByIdAndUpdate(
+    //   id,
+    //   {
+    //     name,
+    //     slug: createUniqueSlug(name),
+    //   },
+    //   { new: true }
+    // );
+
+    const catUpdate = await Category.findById(id);
+    let parentCat = catUpdate.parentCategory;
+    if (parentCategory) {
+      parentCat = parentCategory;
+    }
+    let catIcon = catUpdate.icon;
+    if (icon) {
+      catIcon = icon;
+    }
+
+    // file update
+    let catPhoto = catUpdate.photo;
+
+    if (req.file) {
+      const catUrl = await CloudUpload(req);
+      catPhoto = catUrl.secure_url;
+      await CloudDelete(findPublicID(catUpdate.photo));
+    }
+
+    catUpdate.name = name;
+    catUpdate.slug = createUniqueSlug(name);
+    catUpdate.icon = catIcon;
+    catUpdate.parentCategory = parentCat;
+    catUpdate.photo = catPhoto;
+    catUpdate.save();
 
     return res
       .status(200)
-      .json({ message: "Category updated Successfully", category });
+      .json({ message: "Category updated Successfully", category: catUpdate });
   } catch (error) {
     return res.status(500).json({
       message: "Error updating the Category.",
@@ -217,6 +257,9 @@ export const deleteCategory = AsyncHandler(async (req, res) => {
 
     // Delete the Category
     const category = await Category.findByIdAndDelete(id);
+    if (existingCategory.photo) {
+      await CloudDelete(findPublicID(existingCategory.photo));
+    }
 
     return res.status(200).json({
       message: "Category deleted successfully.",

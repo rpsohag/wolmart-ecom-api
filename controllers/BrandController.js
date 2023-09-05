@@ -182,7 +182,9 @@ export const deleteBrand = AsyncHandler(async (req, res) => {
 
     // Delete the Brand
     const brand = await Brand.findByIdAndDelete(id);
-    await CloudDelete(existingBrand.cloud_public_id);
+    if (existingBrand.logo) {
+      await CloudDelete(existingBrand.cloud_public_id);
+    }
 
     return res.status(200).json({
       message: "Brand deleted successfully.",
