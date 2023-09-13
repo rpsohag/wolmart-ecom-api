@@ -12,6 +12,12 @@ export const CloudUpload = async (req) => {
   return data;
 };
 
+export const CloudUploadMany = async (path) => {
+  // upload brand logo
+  const data = await cloudinary.uploader.upload(path);
+  return data.secure_url;
+};
+
 export const CloudDelete = async (existingBrand) => {
   // upload brand logo
   const data = await cloudinary.uploader.destroy(existingBrand);
