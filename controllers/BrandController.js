@@ -8,7 +8,7 @@ export const getAllBrand = AsyncHandler(async (req, res) => {
   try {
     const brands = await Brand.find();
     if (brands.length > 0) {
-      res.status(200).json(brands);
+      res.status(200).json({ brands });
     } else {
       res.status(404).json({
         message: "No Brands Found",
@@ -55,7 +55,7 @@ export const createBrand = AsyncHandler(async (req, res) => {
   // Validate input
   if (!name) {
     return res.status(400).json({
-      message: "Brand name is required 1!",
+      message: "Brand name is required!",
     });
   }
 
@@ -68,14 +68,17 @@ export const createBrand = AsyncHandler(async (req, res) => {
       });
     }
 
-    const logo = await CloudUpload(req);
+    let logoData = null;
+    if (req.file) {
+      logoData = await CloudUpload(req);
+    }
 
     // Create a new Brand with a unique slug
     const brand = await Brand.create({
       name,
       slug: createUniqueSlug(name),
-      logo: logo.secure_url ? logo.secure_url : null,
-      cloud_public_id: logo.public_id ? logo.public_id : null,
+      logo: logoData.secure_url,
+      cloud_public_id: logoData.public_id,
     });
 
     return res
