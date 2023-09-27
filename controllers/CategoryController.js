@@ -7,7 +7,7 @@ import { findPublicID } from "../helpers/helpers.js";
 
 export const getAllCategory = AsyncHandler(async (req, res) => {
   try {
-    const categorys = await Category.find().populate([
+    const categories = await Category.find().populate([
       {
         path: "subCategory",
         populate: {
@@ -28,8 +28,8 @@ export const getAllCategory = AsyncHandler(async (req, res) => {
       },
     ]);
 
-    if (categorys.length > 0) {
-      res.status(200).json(categorys);
+    if (categories.length > 0) {
+      res.status(200).json({ categories });
     } else {
       res.status(404).json({
         message: "No Categorys Found",
@@ -149,14 +149,12 @@ export const createCategory = AsyncHandler(async (req, res) => {
 export const updateCategory = AsyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, parentCategory, icon } = req.body;
-
   // Validate input
   if (!name) {
     return res.status(400).json({
       message: "Category name is required!",
     });
   }
-
   try {
     // Check if Category with the given ID exists
     const existingCategory = await Category.findById(id);
@@ -165,7 +163,6 @@ export const updateCategory = AsyncHandler(async (req, res) => {
         message: "Category not found!",
       });
     }
-
     // Check if another Category with the same name already exists
     const CategoryCheck = await Category.findOne({ name });
     if (CategoryCheck && CategoryCheck._id.toString() !== id) {
@@ -173,42 +170,43 @@ export const updateCategory = AsyncHandler(async (req, res) => {
         message: "Category with the same name already exists!",
       });
     }
-
-    // const category = await Category.findByIdAndUpdate(
-    //   id,
-    //   {
-    //     name,
-    //     slug: createUniqueSlug(name),
-    //   },
-    //   { new: true }
-    // );
-
     const catUpdate = await Category.findById(id);
     let parentCat = catUpdate.parentCategory;
-    if (parentCategory) {
-      parentCat = parentCategory;
+    if (parentCategory !== parentCat.toString()) {
+      await Category.findByIdAndUpdate(
+        parentCategory,
+        {
+          $push: { subCategory: id },
+        },
+        {
+          new: true,
+        }
+      );
+      await Category.findByIdAndUpdate(
+        parentCat,
+        {
+          $pull: { subCategory: id },
+        },
+        { new: true }
+      );
     }
     let catIcon = catUpdate.icon;
-    if (icon) {
+    if (icon && icon !== catIcon) {
       catIcon = icon;
     }
-
     // file update
     let catPhoto = catUpdate.photo;
-
     if (req.file) {
       const catUrl = await CloudUpload(req);
       catPhoto = catUrl.secure_url;
       await CloudDelete(findPublicID(catUpdate.photo));
     }
-
     catUpdate.name = name;
     catUpdate.slug = createUniqueSlug(name);
     catUpdate.icon = catIcon;
-    catUpdate.parentCategory = parentCat;
+    catUpdate.parentCategory = parentCategory;
     catUpdate.photo = catPhoto;
     catUpdate.save();
-
     return res
       .status(200)
       .json({ message: "Category updated Successfully", category: catUpdate });

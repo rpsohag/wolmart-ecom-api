@@ -7,7 +7,7 @@ export const getAllTag = AsyncHandler(async (req, res) => {
   try {
     const tags = await Tag.find();
     if (tags.length > 0) {
-      res.status(200).json(tags);
+      res.status(200).json({ tags });
     } else {
       res.status(404).json({
         message: "No Tags Found",
